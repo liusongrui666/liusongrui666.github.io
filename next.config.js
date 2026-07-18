@@ -1,4 +1,11 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  output: 'export',
+  distDir: 'docs',
+  images: {
+    unoptimized: true,
+  },
+  trailingSlash: true,
+};
 
 module.exports = nextConfig;
