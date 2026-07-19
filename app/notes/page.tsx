@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { Cpu, Code, BookOpen, Database, ArrowRight, Clock } from "lucide-react";
+import { Cpu, Code, BookOpen, Database, ArrowRight } from "lucide-react";
 import {
   CATEGORY_META,
   getAllCategories,
+  getAllTags,
   getCategoryStats,
 } from "@/lib/notes";
+import TagCloud from "@/components/TagCloud";
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   cpp: Cpu,
@@ -16,6 +18,7 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
 export default function NotesPage() {
   const stats = getCategoryStats();
   const categories = getAllCategories();
+  const tags = getAllTags();
   const totalNotes = Object.values(stats).reduce((a, b) => a + b, 0);
 
   return (
@@ -32,17 +35,17 @@ export default function NotesPage() {
             <span>共 {totalNotes} 篇笔记</span>
             <span>·</span>
             <span>{categories.length} 个分类</span>
+            <span>·</span>
+            <span>{tags.length} 个标签</span>
           </div>
         </div>
 
-        {totalNotes === 0 ? (
-          <div className="p-12 rounded-xl border border-dashed border-border text-center">
-            <BookOpen className="w-12 h-12 text-muted mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">暂无笔记</h3>
-            <p className="text-muted-foreground">在 <code className="px-1.5 py-0.5 rounded bg-white/10 text-white text-sm">content/notes/</code> 目录下添加 .md 文件即可创建笔记</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-6">
+        {/* 分类卡片 */}
+        <div className="mb-12">
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">
+            分类
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4">
             {categories.map((slug) => {
               const meta = CATEGORY_META[slug];
               const Icon = categoryIcons[slug] || BookOpen;
@@ -51,22 +54,37 @@ export default function NotesPage() {
                 <Link
                   key={slug}
                   href={`/notes/${slug}`}
-                  className="group p-6 rounded-xl border border-border bg-card card-hover"
+                  className="group p-5 rounded-xl border border-border bg-card card-hover"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                      <Icon className="w-6 h-6 text-white" />
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
-                    <ArrowRight className="w-5 h-5 text-muted group-hover:text-white transition-all group-hover:translate-x-1" />
+                    <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-white/5">
+                      {count}
+                    </span>
                   </div>
-                  <h2 className="text-xl font-semibold mb-2">{meta.name}</h2>
-                  <p className="text-muted-foreground mb-4">{meta.description}</p>
-                  <div className="flex items-center text-sm text-muted gap-1">
-                    <span>{count} 篇笔记</span>
+                  <h2 className="text-lg font-semibold mb-1.5">{meta.name}</h2>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {meta.description}
+                  </p>
+                  <div className="mt-3 flex items-center text-xs text-muted group-hover:text-white transition-colors">
+                    <span>查看全部</span>
+                    <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
               );
             })}
+          </div>
+        </div>
+
+        {/* 标签云 */}
+        {tags.length > 0 && (
+          <div>
+            <h2 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">
+              所有标签
+            </h2>
+            <TagCloud tags={tags} limit={30} />
           </div>
         )}
       </div>

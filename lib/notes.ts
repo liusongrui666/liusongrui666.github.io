@@ -164,3 +164,72 @@ export function searchNotes(query: string): NoteSummary[] {
     .slice(0, 20)
     .map((r) => r.note);
 }
+
+export interface TagInfo {
+  name: string;
+  count: number;
+}
+
+export function getAllTags(): TagInfo[] {
+  const map = new Map<string, number>();
+  for (const note of getAllNotes()) {
+    for (const tag of note.tags || []) {
+      map.set(tag, (map.get(tag) || 0) + 1);
+    }
+  }
+  return Array.from(map.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export function getNotesByTag(tag: string): NoteSummary[] {
+  return getAllNotes().filter((n) => (n.tags || []).includes(tag));
+}
+
+export function getRecentNotes(limit = 5): NoteSummary[] {
+  return getAllNotes().slice(0, limit);
+}
+
+export interface AdjacentNotes {
+  prev: NoteSummary | null;
+  next: NoteSummary | null;
+}
+
+export function getAdjacentNotes(
+  category: string,
+  slug: string
+): AdjacentNotes {
+  const list = getNotesByCategory(category);
+  const idx = list.findIndex((n) => n.slug === slug);
+  if (idx === -1) return { prev: null, next: null };
+  // 按日期倒序排列后，prev 是更新的、next 是更早的
+  return {
+    prev: idx > 0 ? list[idx - 1] : null,
+    next: idx < list.length - 1 ? list[idx + 1] : null,
+  };
+}
+
+export interface SiteStats {
+  totalNotes: number;
+  totalCategories: number;
+  totalTags: number;
+  totalWords: number;
+  totalReadingTime: number;
+}
+
+export function getSiteStats(): SiteStats {
+  const all = getAllNotes();
+  let totalWords = 0;
+  let totalReadingTime = 0;
+  for (const note of all) {
+    totalWords += note.title.length + (note.description?.length || 0);
+    totalReadingTime += note.readingTime;
+  }
+  return {
+    totalNotes: all.length,
+    totalCategories: getAllCategories().length,
+    totalTags: getAllTags().length,
+    totalWords,
+    totalReadingTime,
+  };
+}

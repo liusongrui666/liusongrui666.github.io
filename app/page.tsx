@@ -1,26 +1,60 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Code, Database, Cpu, ChevronDown } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Code,
+  Database,
+  Cpu,
+  ChevronDown,
+  Sparkles,
+  Clock,
+} from "lucide-react";
+import NoteListItem from "@/components/NoteListItem";
+import TagCloud from "@/components/TagCloud";
+import SiteStats from "@/components/SiteStats";
+import {
+  CATEGORY_META,
+  getAllCategories,
+  getAllTags,
+  getCategoryStats,
+  getRecentNotes,
+  getSiteStats,
+} from "@/lib/notes";
 
-const categories = [
-  { name: "C++", icon: Cpu, href: "/notes/cpp" },
-  { name: "Linux", icon: Code, href: "/notes/linux" },
-  { name: "算法", icon: BookOpen, href: "/notes/algorithm" },
-  { name: "数据库", icon: Database, href: "/notes/database" },
-];
+const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  cpp: Cpu,
+  linux: Code,
+  algorithm: BookOpen,
+  database: Database,
+};
 
 export default function Home() {
+  const stats = getCategoryStats();
+  const categories = getAllCategories();
+  const recentNotes = getRecentNotes(4);
+  const tags = getAllTags();
+  const siteStats = getSiteStats();
+  const totalNotes = Object.values(stats).reduce((a, b) => a + b, 0);
+
   return (
     <div className="pt-16">
-      <section className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 relative">
+      {/* Hero */}
+      <section className="min-h-[90vh] flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center max-w-4xl mx-auto animate-slide-up">
           <div className="mb-8 flex justify-center">
             <div className="relative">
-              <div className="w-28 h-28 rounded-full border-2 border-white/20 bg-card p-1">
+              <div className="absolute inset-0 rounded-full bg-white/5 blur-2xl" />
+              <div className="relative w-28 h-28 rounded-full border-2 border-white/20 bg-card p-1">
                 <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
                   <span className="text-5xl font-bold text-white">W</span>
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card text-xs text-muted-foreground mb-6">
+            <Sparkles className="w-3 h-3" />
+            <span>持续学习 · 不断进步</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6">
@@ -51,21 +85,24 @@ export default function Home() {
             </Link>
           </div>
 
+          {/* 分类快捷入口 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-            {categories.map((category, index) => {
-              const Icon = category.icon;
+            {categories.map((slug, index) => {
+              const meta = CATEGORY_META[slug];
+              const Icon = categoryIcons[slug] || BookOpen;
+              const count = stats[slug] || 0;
               return (
                 <Link
-                  key={category.name}
-                  href={category.href}
+                  key={slug}
+                  href={`/notes/${slug}`}
                   className="group p-5 rounded-xl border border-border bg-card card-hover"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
                     <Icon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="font-medium text-white">{category.name}</h3>
-                  <p className="text-sm text-muted mt-1">查看笔记</p>
+                  <h3 className="font-medium text-white">{meta.name}</h3>
+                  <p className="text-xs text-muted mt-1">{count} 篇</p>
                 </Link>
               );
             })}
@@ -77,14 +114,51 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      {/* 站点统计 */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-border">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-white">
-              持续学习，不断进步
+          <SiteStats stats={siteStats} />
+        </div>
+      </section>
+
+      {/* 最新笔记 */}
+      {recentNotes.length > 0 && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-border">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
+                  最新笔记
+                </h2>
+                <p className="text-muted-foreground text-sm">最新更新的学习记录</p>
+              </div>
+              <Link
+                href="/notes"
+                className="group inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-white transition-colors"
+              >
+                查看全部
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="space-y-3">
+              {recentNotes.map((note) => (
+                <NoteListItem key={`${note.category}-${note.slug}`} note={note} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 三大方向 */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-border">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-white">
+              三个学习方向
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              记录每一个技术成长的瞬间，分享知识与经验
+            <p className="text-muted-foreground text-sm">
+              围绕系统能力、算法能力、工程能力构建知识体系
             </p>
           </div>
 
@@ -93,9 +167,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">学习笔记</h3>
-              <p className="text-muted-foreground">
-                整理 C++、Linux、算法、数据库等技术方向的学习心得与知识总结。
+              <h3 className="text-xl font-semibold mb-2">系统基础</h3>
+              <p className="text-muted-foreground text-sm">
+                C++ 语言、Linux 系统编程、Shell 脚本，夯实工程基础。
               </p>
             </div>
 
@@ -103,9 +177,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
                 <Code className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">项目实践</h3>
-              <p className="text-muted-foreground">
-                展示个人项目作品，记录开发过程中的思考与成长。
+              <h3 className="text-xl font-semibold mb-2">算法能力</h3>
+              <p className="text-muted-foreground text-sm">
+                数据结构、经典算法、LeetCode 题解，培养计算思维。
               </p>
             </div>
 
@@ -113,14 +187,31 @@ export default function Home() {
               <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
                 <Database className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">技术沉淀</h3>
-              <p className="text-muted-foreground">
-                积累技术经验，形成自己的知识体系，持续精进技术能力。
+              <h3 className="text-xl font-semibold mb-2">数据存储</h3>
+              <p className="text-muted-foreground text-sm">
+                MySQL 索引、Redis 缓存、数据库设计与优化。
               </p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* 标签云 */}
+      {tags.length > 0 && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8 border-t border-border">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
+                  热门标签
+                </h2>
+                <p className="text-muted-foreground text-sm">按笔记数量排序</p>
+              </div>
+            </div>
+            <TagCloud tags={tags} />
+          </div>
+        </section>
+      )}
 
       <footer className="py-12 border-t border-border">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -128,16 +219,11 @@ export default function Home() {
             <p className="text-muted text-sm">
               © 2026 My Website. Built with Next.js & Tailwind CSS.
             </p>
-            <div className="flex items-center space-x-6">
-              <Link href="/notes" className="text-muted hover:text-white transition-colors text-sm">
-                笔记
-              </Link>
-              <Link href="/projects" className="text-muted hover:text-white transition-colors text-sm">
-                项目
-              </Link>
-              <Link href="/about" className="text-muted hover:text-white transition-colors text-sm">
-                关于
-              </Link>
+            <div className="flex items-center space-x-6 text-sm text-muted">
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="w-3 h-3" />
+                共 {totalNotes} 篇笔记
+              </span>
             </div>
           </div>
         </div>
