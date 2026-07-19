@@ -245,3 +245,68 @@
     font-weight: 700;
   }
 }
+
+/* ===== 打印样式（简历页 + 笔记页）===== */
+@media print {
+  @page {
+    margin: 12mm;
+    size: A4;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  /* 隐藏导航、按钮、背景网格 */
+  nav,
+  .print\:hidden,
+  .bg-grid::before,
+  .bg-grid::after {
+    display: none !important;
+  }
+
+  /* 链接：保留文本，去除下划线 */
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+
+  /* 简历主体 */
+  #resume-content {
+    box-shadow: none !important;
+    border: 0 !important;
+    background: #fff !important;
+    padding: 0 !important;
+  }
+
+  /* 防止分页破坏段落 */
+  h1,
+  h2,
+  h3,
+  h4 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  section,
+  ul,
+  .border-b,
+  .border-t {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* 笔记打印：去除代码块阴影 */
+  pre,
+  code {
+    background: #f5f5f5 !important;
+    color: #000 !important;
+    border: 1px solid #ddd !important;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}

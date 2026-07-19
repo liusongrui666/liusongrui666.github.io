@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { ArrowLeft, Calendar, Clock, Tag, ArrowRight, ArrowUpRight } from "lucide-react";
 import Markdown from "@/components/Markdown";
 import ReadingProgress from "@/components/ReadingProgress";
@@ -32,6 +33,34 @@ export function generateStaticParams() {
     }
   }
   return params;
+}
+
+export function generateMetadata({ params }: NotePageProps): Metadata {
+  const note = getNote(params.category, params.slug);
+  if (!note) return { title: "未找到笔记" };
+  const catName = CATEGORY_META[params.category]?.name || params.category;
+  const ogUrl = `/api/og?type=note&title=${encodeURIComponent(note.title)}&subtitle=${encodeURIComponent(
+    `${catName} · ${note.description || ""}`
+  )}`;
+  return {
+    title: note.title,
+    description: note.description || `${catName} - ${note.title}`,
+    alternates: {
+      canonical: `/notes/${params.category}/${params.slug}`,
+    },
+    openGraph: {
+      type: "article",
+      title: note.title,
+      description: note.description || "",
+      images: [{ url: ogUrl, width: 1200, height: 630, alt: note.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: note.title,
+      description: note.description || "",
+      images: [ogUrl],
+    },
+  };
 }
 
 function formatDate(iso: string): string {

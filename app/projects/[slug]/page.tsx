@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import {
   ArrowLeft,
   Calendar,
@@ -17,6 +18,33 @@ interface ProjectPageProps {
 
 export function generateStaticParams() {
   return getAllProjectSlugs().map((slug) => ({ slug }));
+}
+
+export function generateMetadata({ params }: ProjectPageProps): Metadata {
+  const project = getProject(params.slug);
+  if (!project) return { title: "未找到项目" };
+  const ogUrl = `/api/og?type=project&title=${encodeURIComponent(project.title)}&subtitle=${encodeURIComponent(
+    project.description
+  )}`;
+  return {
+    title: project.title,
+    description: project.description,
+    alternates: {
+      canonical: `/projects/${params.slug}`,
+    },
+    openGraph: {
+      type: "article",
+      title: project.title,
+      description: project.description,
+      images: [{ url: ogUrl, width: 1200, height: 630, alt: project.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: project.title,
+      description: project.description,
+      images: [ogUrl],
+    },
+  };
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {

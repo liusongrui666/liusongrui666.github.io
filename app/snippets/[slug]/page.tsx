@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import Markdown from "@/components/Markdown";
 import CodeBlock from "@/components/CodeBlock";
@@ -11,6 +12,33 @@ interface SnippetPageProps {
 
 export function generateStaticParams() {
   return getAllSnippetSlugs().map((slug) => ({ slug }));
+}
+
+export function generateMetadata({ params }: SnippetPageProps): Metadata {
+  const snippet = getSnippet(params.slug);
+  if (!snippet) return { title: "未找到代码片段" };
+  const ogUrl = `/api/og?type=snippet&title=${encodeURIComponent(snippet.title)}&subtitle=${encodeURIComponent(
+    `${snippet.language} · ${snippet.description || ""}`
+  )}`;
+  return {
+    title: snippet.title,
+    description: snippet.description || `${snippet.language} 代码片段`,
+    alternates: {
+      canonical: `/snippets/${params.slug}`,
+    },
+    openGraph: {
+      type: "article",
+      title: snippet.title,
+      description: snippet.description || "",
+      images: [{ url: ogUrl, width: 1200, height: 630, alt: snippet.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: snippet.title,
+      description: snippet.description || "",
+      images: [ogUrl],
+    },
+  };
 }
 
 function formatDate(iso: string): string {

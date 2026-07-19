@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Github, Menu, X } from "lucide-react";
+import { Github, Menu, X, Rss } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import SearchBox from "./SearchBox";
 
@@ -13,6 +13,7 @@ const navItems = [
   { name: "片段", href: "/snippets" },
   { name: "路线", href: "/roadmap" },
   { name: "关于", href: "/about" },
+  { name: "简历", href: "/resume" },
 ];
 
 export default function Navbar() {
@@ -99,6 +100,17 @@ export default function Navbar() {
 
           <div className="flex items-center space-x-3">
             <SearchBox />
+
+            <a
+              href="/feed.xml"
+              target="_blank"
+              rel="alternate"
+              className="p-2 rounded-lg text-muted-foreground hover:text-white hover:bg-white/5 transition-all duration-200"
+              aria-label="RSS 订阅"
+              title="RSS 订阅"
+            >
+              <Rss className="w-5 h-5" />
+            </a>
 
             <a
               href="https://github.com"
