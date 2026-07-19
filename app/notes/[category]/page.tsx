@@ -1,25 +1,31 @@
 import Link from "next/link";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { notFound } from "next/navigation";
+import { ArrowLeft, Calendar, Clock, Tag } from "lucide-react";
+import {
+  CATEGORY_META,
+  getAllCategories,
+  getNotesByCategory,
+  type NoteSummary,
+} from "@/lib/notes";
 
 interface CategoryPageProps {
-  params: {
-    category: string;
-  };
+  params: { category: string };
 }
 
-const categoryNames: Record<string, string> = {
-  cpp: "C++",
-  linux: "Linux",
-  algorithm: "算法",
-  database: "数据库",
-};
-
 export function generateStaticParams() {
-  return [{ category: "cpp" }, { category: "linux" }, { category: "algorithm" }, { category: "database" }];
+  return getAllCategories().map((category) => ({ category }));
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
-  const categoryName = categoryNames[params.category] || params.category;
+  const meta = CATEGORY_META[params.category];
+  if (!meta) notFound();
+
+  const notes = getNotesByCategory(params.category);
 
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen">
@@ -34,21 +40,58 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
         <div className="mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
-            {categoryName} 笔记
+            {meta.name} 笔记
           </h1>
-          <p className="text-lg text-muted-foreground">
-            正在整理中...
+          <p className="text-lg text-muted-foreground mb-2">
+            {meta.description}
           </p>
+          <p className="text-sm text-muted">共 {notes.length} 篇</p>
         </div>
 
-        <div className="p-12 rounded-xl border border-dashed border-border text-center">
-          <BookOpen className="w-16 h-16 text-muted mx-auto mb-6" />
-          <h3 className="text-xl font-medium mb-3">笔记即将发布</h3>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            {categoryName} 相关的学习笔记正在整理中，敬请期待！
-          </p>
-        </div>
+        {notes.length === 0 ? (
+          <div className="p-12 rounded-xl border border-dashed border-border text-center">
+            <p className="text-muted-foreground">该分类下暂无笔记</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {notes.map((note) => (
+              <NoteCard key={note.slug} note={note} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function NoteCard({ note }: { note: NoteSummary }) {
+  return (
+    <Link
+      href={`/notes/${note.category}/${note.slug}`}
+      className="block p-5 rounded-xl border border-border bg-card card-hover"
+    >
+      <h3 className="text-lg font-semibold text-white mb-2">{note.title}</h3>
+      {note.description && (
+        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+          {note.description}
+        </p>
+      )}
+      <div className="flex flex-wrap items-center gap-4 text-xs text-muted">
+        <span className="inline-flex items-center gap-1">
+          <Calendar className="w-3 h-3" />
+          {formatDate(note.date)}
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          {note.readingTime} 分钟
+        </span>
+        {note.tags && note.tags.length > 0 && (
+          <span className="inline-flex items-center gap-1">
+            <Tag className="w-3 h-3" />
+            {note.tags.slice(0, 3).join(" · ")}
+          </span>
+        )}
+      </div>
+    </Link>
   );
 }

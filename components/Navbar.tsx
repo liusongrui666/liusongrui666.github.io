@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Github, Menu, X } from "lucide-react";
 import { useState } from "react";
+import SearchBox from "./SearchBox";
 
 const navItems = [
   { name: "首页", href: "/" },
@@ -46,7 +47,9 @@ export default function Navbar() {
             })}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            <SearchBox />
+
             <a
               href="https://github.com"
               target="_blank"
