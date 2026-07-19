@@ -95,7 +95,7 @@ export function getAllSnippets(): SnippetSummary[] {
   ensureDir();
   const files = fs
     .readdirSync(SNIPPETS_DIR)
-    .filter((f) => /\.mdx?$/.test(f));
+    .filter((f) => /\.mdx?$/.test(f) && !/^README/i.test(f));
   const snippets: Snippet[] = [];
   for (const f of files) {
     const slug = f.replace(/\.mdx?$/, "");
@@ -109,6 +109,8 @@ export function getAllSnippets(): SnippetSummary[] {
 
 export function getSnippet(slug: string): Snippet | null {
   ensureDir();
+  // 跳过 README
+  if (/^README/i.test(slug)) return null;
   for (const ext of [".md", ".mdx"]) {
     const p = path.join(SNIPPETS_DIR, `${slug}${ext}`);
     if (fs.existsSync(p)) {
@@ -123,7 +125,7 @@ export function getAllSnippetSlugs(): string[] {
   ensureDir();
   return fs
     .readdirSync(SNIPPETS_DIR)
-    .filter((f) => /\.mdx?$/.test(f))
+    .filter((f) => /\.mdx?$/.test(f) && !/^README/i.test(f))
     .map((f) => f.replace(/\.mdx?$/, ""));
 }
 

@@ -84,7 +84,7 @@ export function getAllProjects(): ProjectSummary[] {
   ensureDir();
   const dirs = fs
     .readdirSync(PROJECTS_DIR, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+    .filter((d) => d.isDirectory() && !/^README/i.test(d.name))
     .map((d) => d.name);
   const projects: Project[] = [];
   for (const slug of dirs) {
@@ -102,6 +102,7 @@ export function getAllProjects(): ProjectSummary[] {
 }
 
 export function getProject(slug: string): Project | null {
+  if (/^README/i.test(slug)) return null;
   return readProject(slug);
 }
 
@@ -109,6 +110,6 @@ export function getAllProjectSlugs(): string[] {
   ensureDir();
   return fs
     .readdirSync(PROJECTS_DIR, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+    .filter((d) => d.isDirectory() && !/^README/i.test(d.name))
     .map((d) => d.name);
 }

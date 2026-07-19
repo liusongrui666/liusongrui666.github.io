@@ -46,7 +46,7 @@ function getAllMdFiles(dir: string): string[] {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       files.push(...getAllMdFiles(fullPath));
-    } else if (entry.isFile() && /\.mdx?$/.test(entry.name)) {
+    } else if (entry.isFile() && /\.mdx?$/.test(entry.name) && !/^README/i.test(entry.name)) {
       files.push(fullPath);
     }
   }
