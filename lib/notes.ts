@@ -1,6 +1,10 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { CATEGORY_META, CATEGORY_SLUGS } from "./categories";
+
+export { CATEGORY_META, CATEGORY_SLUGS };
+export type { CategoryMeta } from "./categories";
 
 export interface NoteFrontmatter {
   title: string;
@@ -21,32 +25,6 @@ export interface NoteSummary extends NoteFrontmatter {
 }
 
 const NOTES_DIR = path.join(process.cwd(), "content", "notes");
-
-export const CATEGORY_META: Record<
-  string,
-  { name: string; description: string; order: number }
-> = {
-  cpp: {
-    name: "C++",
-    description: "C++ 编程语言学习笔记，包括语法、STL、面向对象等",
-    order: 1,
-  },
-  linux: {
-    name: "Linux",
-    description: "Linux 系统使用、命令行、Shell 脚本等相关笔记",
-    order: 2,
-  },
-  algorithm: {
-    name: "算法",
-    description: "数据结构与算法学习，包括 LeetCode 题解",
-    order: 3,
-  },
-  database: {
-    name: "数据库",
-    description: "MySQL、Redis 等数据库相关知识笔记",
-    order: 4,
-  },
-};
 
 function ensureNotesDir(): void {
   if (!fs.existsSync(NOTES_DIR)) {
@@ -135,9 +113,7 @@ export function getCategoryStats(): Record<string, number> {
 }
 
 export function getAllCategories(): string[] {
-  return Object.keys(CATEGORY_META).sort(
-    (a, b) => CATEGORY_META[a].order - CATEGORY_META[b].order
-  );
+  return CATEGORY_SLUGS;
 }
 
 export function searchNotes(query: string): NoteSummary[] {

@@ -7,6 +7,7 @@ import {
   getCategoryStats,
 } from "@/lib/notes";
 import TagCloud from "@/components/TagCloud";
+import ImportButton from "@/components/ImportButton";
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   cpp: Cpu,
@@ -24,20 +25,23 @@ export default function NotesPage() {
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
-            学习笔记
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mb-4">
-            记录学习过程中的知识点、心得与总结，持续更新中...
-          </p>
-          <div className="flex items-center gap-6 text-sm text-muted">
-            <span>共 {totalNotes} 篇笔记</span>
-            <span>·</span>
-            <span>{categories.length} 个分类</span>
-            <span>·</span>
-            <span>{tags.length} 个标签</span>
+        <div className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+              学习笔记
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mb-4">
+              记录学习过程中的知识点、心得与总结，持续更新中...
+            </p>
+            <div className="flex items-center gap-6 text-sm text-muted">
+              <span>共 {totalNotes} 篇笔记</span>
+              <span>·</span>
+              <span>{categories.length} 个分类</span>
+              <span>·</span>
+              <span>{tags.length} 个标签</span>
+            </div>
           </div>
+          <ImportButton />
         </div>
 
         {/* 分类卡片 */}

@@ -6,6 +6,7 @@ import ReadingProgress from "@/components/ReadingProgress";
 import BackToTop from "@/components/BackToTop";
 import TableOfContents from "@/components/TableOfContents";
 import CodeCopyEnhancer from "@/components/CodeCopyEnhancer";
+import AITutor from "@/components/AITutor";
 import {
   CATEGORY_META,
   getAdjacentNotes,
@@ -208,6 +209,12 @@ export default function NotePage({ params }: NotePageProps) {
       </div>
 
       <BackToTop />
+
+      <AITutor
+        noteTitle={note.title}
+        noteCategory={categoryMeta.name}
+        noteContent={note.content}
+      />
     </>
   );
 }
