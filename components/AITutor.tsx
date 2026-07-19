@@ -6,11 +6,13 @@ import {
   X,
   Send,
   Loader2,
-  MessageSquare,
   Trash2,
   Bot,
   User,
+  Settings,
+  Key,
 } from "lucide-react";
+import AISettings, { type AIUserConfig } from "./AISettings";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -23,6 +25,9 @@ interface AITutorProps {
   noteCategory: string;
 }
 
+const STORAGE_KEY = "ai-tutor-messages";
+const CONFIG_KEY = "ai-user-config";
+
 const QUICK_PROMPTS = [
   { label: "总结要点", prompt: "请用 3-5 个要点总结这篇笔记的核心内容" },
   { label: "通俗解释", prompt: "请用通俗易懂的语言解释这篇笔记的主要概念" },
@@ -30,23 +35,32 @@ const QUICK_PROMPTS = [
   { label: "代码示例", prompt: "如果这篇笔记涉及代码，请给出更详细的代码示例" },
 ];
 
-const STORAGE_KEY = "ai-tutor-messages";
+function loadConfig(): AIUserConfig | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CONFIG_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw) as AIUserConfig;
+    if (!c.apiKey) return null;
+    return c;
+  } catch {
+    return null;
+  }
+}
 
 export default function AITutor({ noteTitle, noteContent, noteCategory }: AITutorProps) {
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
-  const [aiEnabled, setAiEnabled] = useState(false);
+  const [config, setConfig] = useState<AIUserConfig | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 检查 AI 状态
+  // 读取用户配置
   useEffect(() => {
-    fetch("/api/ai/chat")
-      .then((r) => r.json())
-      .then((d) => setAiEnabled(Boolean(d.enabled)))
-      .catch(() => setAiEnabled(false));
-  }, []);
+    setConfig(loadConfig());
+  }, [open, settingsOpen]);
 
   // 加载历史
   useEffect(() => {
@@ -75,6 +89,12 @@ export default function AITutor({ noteTitle, noteContent, noteCategory }: AITuto
     const content = (text ?? input).trim();
     if (!content || streaming) return;
 
+    const currentConfig = loadConfig();
+    if (!currentConfig) {
+      setSettingsOpen(true);
+      return;
+    }
+
     const newMessages: ChatMessage[] = [
       ...messages,
       { role: "user", content },
@@ -82,8 +102,6 @@ export default function AITutor({ noteTitle, noteContent, noteCategory }: AITuto
     setMessages(newMessages);
     setInput("");
     setStreaming(true);
-
-    // 添加空的助手消息
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
     try {
@@ -96,6 +114,10 @@ export default function AITutor({ noteTitle, noteContent, noteCategory }: AITuto
             content: m.content,
           })),
           context: `笔记标题：${noteTitle}\n笔记分类：${noteCategory}\n\n笔记内容：\n${noteContent}`,
+          userApiKey: currentConfig.apiKey,
+          userProvider: currentConfig.provider,
+          userBaseUrl: currentConfig.baseUrl,
+          userModel: currentConfig.model,
         }),
       });
 
@@ -166,7 +188,6 @@ export default function AITutor({ noteTitle, noteContent, noteCategory }: AITuto
 
   return (
     <>
-      {/* 浮动按钮 */}
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-6 left-6 z-40 inline-flex items-center gap-2 px-4 py-3 rounded-full bg-white text-black font-medium shadow-lg hover:scale-105 transition-transform"
@@ -174,9 +195,11 @@ export default function AITutor({ noteTitle, noteContent, noteCategory }: AITuto
       >
         <Sparkles className="w-4 h-4" />
         <span className="text-sm">AI 讲解</span>
+        {!config && (
+          <span className="ml-0.5 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+        )}
       </button>
 
-      {/* 抽屉 */}
       {open && (
         <div
           className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex justify-end"
@@ -210,6 +233,14 @@ export default function AITutor({ noteTitle, noteContent, noteCategory }: AITuto
                   </button>
                 )}
                 <button
+                  onClick={() => setSettingsOpen(true)}
+                  className="p-2 rounded text-muted-foreground hover:text-white hover:bg-white/5"
+                  aria-label="设置"
+                  title="设置"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                <button
                   onClick={() => setOpen(false)}
                   className="p-2 rounded text-muted-foreground hover:text-white hover:bg-white/5"
                   aria-label="关闭"
@@ -230,41 +261,44 @@ export default function AITutor({ noteTitle, noteContent, noteCategory }: AITuto
                     </p>
                   </div>
 
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                      快捷提问
-                    </p>
-                    <div className="space-y-2">
-                      {QUICK_PROMPTS.map((q) => (
-                        <button
-                          key={q.label}
-                          onClick={() => sendMessage(q.prompt)}
-                          disabled={streaming}
-                          className="w-full text-left px-3 py-2.5 rounded-lg border border-border bg-background hover:border-border-hover hover:bg-card-hover transition-colors text-sm disabled:opacity-50"
-                        >
-                          <span className="text-foreground">{q.label}</span>
-                          <span className="block text-xs text-muted-foreground mt-0.5">
-                            {q.prompt}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {!aiEnabled && (
-                    <div className="rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground">
-                      <p className="text-white font-medium mb-1">AI 未启用</p>
-                      <p>
-                        当前为占位响应。在 Vercel 项目添加{" "}
-                        <code className="px-1 py-0.5 rounded bg-white/10 text-white">
-                          DEEPSEEK_API_KEY
-                        </code>{" "}
-                        环境变量并设置{" "}
-                        <code className="px-1 py-0.5 rounded bg-white/10 text-white">
-                          AI_PROVIDER=deepseek
-                        </code>{" "}
-                        即可启用真实 AI 讲解。
+                  {!config && (
+                    <div className="rounded-lg border border-dashed border-border bg-background p-4 text-sm">
+                      <div className="flex items-center gap-2 mb-2 text-white">
+                        <Key className="w-4 h-4" />
+                        <span className="font-medium">需要配置 API Key</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        推荐使用 DeepSeek（中文好、价格低、新用户免费）
                       </p>
+                      <button
+                        onClick={() => setSettingsOpen(true)}
+                        className="w-full px-3 py-2 rounded-lg bg-white text-black font-medium hover:bg-gray-200 transition-colors text-sm"
+                      >
+                        打开设置
+                      </button>
+                    </div>
+                  )}
+
+                  {config && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                        快捷提问
+                      </p>
+                      <div className="space-y-2">
+                        {QUICK_PROMPTS.map((q) => (
+                          <button
+                            key={q.label}
+                            onClick={() => sendMessage(q.prompt)}
+                            disabled={streaming}
+                            className="w-full text-left px-3 py-2.5 rounded-lg border border-border bg-background hover:border-border-hover hover:bg-card-hover transition-colors text-sm disabled:opacity-50"
+                          >
+                            <span className="text-foreground">{q.label}</span>
+                            <span className="block text-xs text-muted-foreground mt-0.5">
+                              {q.prompt}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -307,40 +341,50 @@ export default function AITutor({ noteTitle, noteContent, noteCategory }: AITuto
             </div>
 
             <div className="p-3 border-t border-border shrink-0">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  sendMessage();
-                }}
-                className="flex items-end gap-2"
-              >
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      sendMessage();
-                    }
-                  }}
-                  placeholder="问点关于这篇笔记的问题..."
-                  rows={2}
-                  disabled={streaming}
-                  className="flex-1 resize-none px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground outline-none focus:border-white/40 disabled:opacity-50 text-sm"
-                />
+              {!config ? (
                 <button
-                  type="submit"
-                  disabled={!input.trim() || streaming}
-                  className="p-2.5 rounded-lg bg-white text-black disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
-                  aria-label="发送"
+                  onClick={() => setSettingsOpen(true)}
+                  className="w-full px-3 py-2.5 rounded-lg bg-white text-black font-medium hover:bg-gray-200 transition-colors text-sm inline-flex items-center justify-center gap-2"
                 >
-                  {streaming ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
+                  <Key className="w-4 h-4" />
+                  配置 API Key 开始对话
                 </button>
-              </form>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    sendMessage();
+                  }}
+                  className="flex items-end gap-2"
+                >
+                  <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
+                    placeholder="问点关于这篇笔记的问题..."
+                    rows={2}
+                    disabled={streaming}
+                    className="flex-1 resize-none px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground outline-none focus:border-white/40 disabled:opacity-50 text-sm"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!input.trim() || streaming}
+                    className="p-2.5 rounded-lg bg-white text-black disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
+                    aria-label="发送"
+                  >
+                    {streaming ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </button>
+                </form>
+              )}
               <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
                 AI 回答仅供参考，可能有误，请以原文为准
               </p>
@@ -348,6 +392,12 @@ export default function AITutor({ noteTitle, noteContent, noteCategory }: AITuto
           </div>
         </div>
       )}
+
+      <AISettings
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onSaved={(c) => setConfig(c)}
+      />
     </>
   );
 }

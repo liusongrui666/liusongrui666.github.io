@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { streamChat, getAIStatus } from "@/lib/ai";
+import { streamChat, getAIStatus, type ProviderId } from "@/lib/ai";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -9,14 +9,17 @@ interface ChatRequest {
   context?: string;
   model?: string;
   temperature?: number;
+  userApiKey?: string;
+  userProvider?: ProviderId;
+  userBaseUrl?: string;
+  userModel?: string;
 }
 
 /**
  * AI 讲解 API - 流式响应 (Server-Sent Events)
  *
- * Body: { messages, context?, model?, temperature? }
- *
- * 响应：SSE 格式，每个 event 包含 JSON { content, done }
+ * 接受用户在浏览器填入的 API Key（userApiKey），后端直接透传给对应服务商。
+ * Key 不会存储在服务端，仅用于本次请求。
  */
 export async function POST(request: Request) {
   try {
@@ -35,6 +38,10 @@ export async function POST(request: Request) {
             context: body.context,
             model: body.model,
             temperature: body.temperature,
+            userApiKey: body.userApiKey,
+            userProvider: body.userProvider,
+            userBaseUrl: body.userBaseUrl,
+            userModel: body.userModel,
           })) {
             const data = `data: ${JSON.stringify(chunk)}\n\n`;
             controller.enqueue(encoder.encode(data));
