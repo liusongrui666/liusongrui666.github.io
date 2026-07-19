@@ -7,11 +7,13 @@ import BackToTop from "@/components/BackToTop";
 import TableOfContents from "@/components/TableOfContents";
 import CodeCopyEnhancer from "@/components/CodeCopyEnhancer";
 import AITutor from "@/components/AITutor";
+import Comments from "@/components/Comments";
 import {
   CATEGORY_META,
   getAdjacentNotes,
   getAllCategories,
   getAllNotes,
+  getBacklinks,
   getNote,
   getNotesByCategory,
 } from "@/lib/notes";
@@ -55,6 +57,7 @@ export default function NotePage({ params }: NotePageProps) {
 
   const headings = extractHeadings(note.content);
   const { prev, next } = getAdjacentNotes(params.category, params.slug);
+  const backlinks = getBacklinks(params.category, params.slug);
 
   return (
     <>
@@ -172,11 +175,38 @@ export default function NotePage({ params }: NotePageProps) {
                 </nav>
               )}
 
+              {/* 反向链接 Backlinks */}
+              {backlinks.length > 0 && (
+                <div className="mt-12 p-5 rounded-xl border border-border bg-card">
+                  <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3 inline-flex items-center gap-1.5">
+                    <span>🔗</span>
+                    被 {backlinks.length} 篇笔记引用
+                  </h3>
+                  <ul className="space-y-2">
+                    {backlinks.map((b) => (
+                      <li key={`${b.category}-${b.slug}`}>
+                        <Link
+                          href={`/notes/${b.category}/${b.slug}`}
+                          className="group flex items-start gap-2 text-sm"
+                        >
+                          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-white/5">
+                            {b.category}
+                          </span>
+                          <span className="text-muted-foreground group-hover:text-white transition-colors">
+                            {b.title}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* 相关文章 */}
               {relatedNotes.length > 0 && (
                 <div className="mt-12">
                   <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-4">
-                    相关笔记
+                    相关文章
                   </h3>
                   <div className="grid sm:grid-cols-3 gap-3">
                     {relatedNotes.map((rel) => (
@@ -197,6 +227,11 @@ export default function NotePage({ params }: NotePageProps) {
                   </div>
                 </div>
               )}
+
+              <Comments
+                term={`notes-${params.category}-${params.slug}`}
+                title={note.title}
+              />
             </article>
 
             <aside className="hidden lg:block">

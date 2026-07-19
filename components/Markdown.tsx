@@ -2,10 +2,11 @@ import { renderMarkdown } from "@/lib/markdown";
 
 interface MarkdownProps {
   content: string;
+  currentCategory?: string;
 }
 
-export default async function Markdown({ content }: MarkdownProps) {
-  const html = await renderMarkdown(content);
+export default async function Markdown({ content, currentCategory }: MarkdownProps) {
+  const html = await renderMarkdown(content, { currentCategory });
 
   return (
     <div

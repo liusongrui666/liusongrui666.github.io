@@ -142,6 +142,22 @@
     @apply px-1.5 py-0.5 rounded text-[0.875em] bg-white/10 text-white font-mono;
   }
 
+  /* Wiki Link 样式 */
+  .markdown-body .wiki-link {
+    @apply text-white underline decoration-dotted underline-offset-4 transition-colors;
+    text-decoration-color: #71717a;
+  }
+
+  .markdown-body .wiki-link:hover {
+    text-decoration-color: white;
+    @apply bg-white/5;
+  }
+
+  .markdown-body .wiki-link-missing {
+    @apply text-red-300;
+    text-decoration-color: rgba(248, 113, 113, 0.5);
+  }
+
   .markdown-body pre {
     @apply p-4 rounded-lg my-5 overflow-x-auto;
     background-color: #0a0a0a;

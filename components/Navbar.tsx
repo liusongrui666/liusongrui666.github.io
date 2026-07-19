@@ -10,6 +10,8 @@ const navItems = [
   { name: "首页", href: "/" },
   { name: "笔记", href: "/notes" },
   { name: "项目", href: "/projects" },
+  { name: "片段", href: "/snippets" },
+  { name: "路线", href: "/roadmap" },
   { name: "关于", href: "/about" },
 ];
 

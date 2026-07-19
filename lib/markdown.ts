@@ -4,10 +4,19 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import { remarkWikiLink } from "./remark-wiki-link";
 
-export async function renderMarkdown(content: string): Promise<string> {
+export interface RenderOptions {
+  currentCategory?: string;
+}
+
+export async function renderMarkdown(
+  content: string,
+  options: RenderOptions = {}
+): Promise<string> {
   const result = await remark()
     .use(remarkGfm)
+    .use(remarkWikiLink, { currentCategory: options.currentCategory })
     .use(remarkHtml, { sanitize: false })
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, {
