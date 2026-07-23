@@ -5,6 +5,7 @@ import {
   getAllSnippetLanguages,
   getAllSnippetTags,
 } from "@/lib/snippets";
+import NewFileButton from "@/components/NewFileButton";
 
 const LANG_COLORS: Record<string, string> = {
   python: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
@@ -42,30 +43,34 @@ export default function SnippetsPage() {
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white inline-flex items-center gap-3">
-            <Code2 className="w-10 h-10" />
-            代码片段
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mb-4">
-            日常开发中常用的代码片段，按语言和用途分类整理。
-          </p>
-          <div className="flex items-center gap-6 text-sm text-muted">
-            <span>共 {snippets.length} 个片段</span>
-            <span>·</span>
-            <span>{languages.length} 种语言</span>
-            <span>·</span>
-            <span>{tags.length} 个标签</span>
+        <div className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white inline-flex items-center gap-3">
+              <Code2 className="w-10 h-10" />
+              代码片段
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mb-4">
+              日常开发中常用的代码片段，按语言和用途分类整理。
+            </p>
+            <div className="flex items-center gap-6 text-sm text-muted">
+              <span>共 {snippets.length} 个片段</span>
+              <span>·</span>
+              <span>{languages.length} 种语言</span>
+              <span>·</span>
+              <span>{tags.length} 个标签</span>
+            </div>
           </div>
+          <NewFileButton type="snippet" variant="primary" />
         </div>
 
         {snippets.length === 0 ? (
-          <div className="p-12 rounded-xl border border-dashed border-border text-center">
-            <Code2 className="w-12 h-12 text-muted mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">暂无片段</h3>
+          <div className="p-12 rounded-xl border border-dashed border-border text-center space-y-4">
+            <Code2 className="w-12 h-12 text-muted mx-auto" />
+            <h3 className="text-lg font-medium">暂无片段</h3>
             <p className="text-muted-foreground text-sm">
               在 <code className="px-1.5 py-0.5 rounded bg-white/10 text-white">content/snippets/</code> 下添加 .md 文件即可
             </p>
+            <NewFileButton type="snippet" variant="primary" />
           </div>
         ) : (
           <>

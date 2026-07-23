@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Hash } from "lucide-react";
 import NoteListItem from "@/components/NoteListItem";
+import NewFileButton from "@/components/NewFileButton";
 import {
   CATEGORY_META,
   getAllCategories,
@@ -56,16 +57,19 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           返回笔记列表
         </Link>
 
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-3">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white">
-              {meta.name} 笔记
-            </h1>
-            <span className="px-2 py-0.5 rounded-md bg-white/5 text-xs text-muted-foreground">
-              {notes.length} 篇
-            </span>
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white">
+                {meta.name} 笔记
+              </h1>
+              <span className="px-2 py-0.5 rounded-md bg-white/5 text-xs text-muted-foreground">
+                {notes.length} 篇
+              </span>
+            </div>
+            <p className="text-muted-foreground">{meta.description}</p>
           </div>
-          <p className="text-muted-foreground">{meta.description}</p>
+          <NewFileButton type="note" defaultCategory={params.category} variant="primary" />
         </div>
 
         {categoryTags.length > 0 && (
@@ -79,8 +83,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         )}
 
         {notes.length === 0 ? (
-          <div className="p-12 rounded-xl border border-dashed border-border text-center">
+          <div className="p-12 rounded-xl border border-dashed border-border text-center space-y-4">
             <p className="text-muted-foreground">该分类下暂无笔记</p>
+            <NewFileButton type="note" defaultCategory={params.category} variant="primary" />
           </div>
         ) : (
           <div className="space-y-3">

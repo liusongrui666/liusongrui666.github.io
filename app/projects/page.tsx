@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, FolderGit2, Star, Github, ExternalLink } from "lucide-react";
 import { getAllProjects } from "@/lib/projects";
+import NewFileButton from "@/components/NewFileButton";
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   active: { label: "进行中", color: "bg-green-500/20 text-green-300 border-green-500/30" },
@@ -22,27 +23,31 @@ export default function ProjectsPage() {
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
-            项目
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mb-4">
-            个人项目与实践作品，记录技术成长历程。
-          </p>
-          <div className="flex items-center gap-6 text-sm text-muted">
-            <span>共 {projects.length} 个项目</span>
-            <span>·</span>
-            <span>持续更新中</span>
+        <div className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+              项目
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mb-4">
+              个人项目与实践作品，记录技术成长历程。
+            </p>
+            <div className="flex items-center gap-6 text-sm text-muted">
+              <span>共 {projects.length} 个项目</span>
+              <span>·</span>
+              <span>持续更新中</span>
+            </div>
           </div>
+          <NewFileButton type="project" variant="primary" />
         </div>
 
         {projects.length === 0 ? (
-          <div className="p-12 rounded-xl border border-dashed border-border text-center">
-            <FolderGit2 className="w-12 h-12 text-muted mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">暂无项目</h3>
+          <div className="p-12 rounded-xl border border-dashed border-border text-center space-y-4">
+            <FolderGit2 className="w-12 h-12 text-muted mx-auto" />
+            <h3 className="text-lg font-medium">暂无项目</h3>
             <p className="text-muted-foreground text-sm">
               在 <code className="px-1.5 py-0.5 rounded bg-white/10 text-white">content/projects/</code> 下创建目录并添加 <code className="px-1.5 py-0.5 rounded bg-white/10 text-white">index.md</code> 即可
             </p>
+            <NewFileButton type="project" variant="primary" />
           </div>
         ) : (
           <>
