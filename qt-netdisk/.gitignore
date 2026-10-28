@@ -1,0 +1,13 @@
+# Local Qt project ignores
+build-*/
+*.pro.user
+*.pro.user.*
+*.autosave
+connect.config
+*.exe
+*.dll
+*.o
+*.obj
+*.a
+*.lib
+Makefile*
