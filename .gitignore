@@ -1,36 +1,13 @@
-# Dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
-
-# Testing
-/coverage
-
-# Next.js
-/.next/
-/out/
-/docs/
-
-# Production
-/build
-
-# Misc
-.DS_Store
-*.pem
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Local env files
-.env*.local
-.env
-
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
+# Local Qt project ignores
+build-*/
+*.pro.user
+*.pro.user.*
+*.autosave
+connect.config
+*.exe
+*.dll
+*.o
+*.obj
+*.a
+*.lib
+Makefile*
